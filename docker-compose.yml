@@ -1,0 +1,47 @@
+version : "3.8" 
+services :
+    webserver : 
+        build :
+            context : ./ 
+            dockerfile : Dockerfile 
+        container_name : php_ci
+        ports : 
+            - 9080:80
+        networks :
+            backend-net :
+                ipv4_address : 7.14.21.28
+        links :
+            - memcached
+            - database
+        depends_on :
+            - memcached
+            - database
+        volumes :
+            - .:/var/www/html
+        command : sh /var/www/html/docker/init.sh
+    database :
+        container_name : "database_ci"
+        image : mariadb
+        ports :
+            - "9306:3306"
+        networks :
+            backend-net :
+                ipv4_address : 7.14.21.35
+        environment :
+            - MYSQL_ROOT_PASSWORD=7*DBci369
+            - MYSQL_DATABASE=db_ci
+    memcached :
+        container_name : memcached_ci
+        image : memcached:alpine
+        ports :
+            - "9211:11211"
+        networks :
+            backend-net :
+                ipv4_address : 7.14.21.42
+networks :
+    backend-net :
+        driver : bridge
+        ipam :
+            driver : default
+            config :
+                - subnet : 7.14.21.0/26
